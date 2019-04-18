@@ -1,12 +1,26 @@
 // Rutas REST que generamos
 import { Router, Request, Response } from 'express';
+import Server from '../classes/server';
 
 const router = Router();
 
-router.get('/mensajes', (req: Request, res: Response) => {
+router.post('/mensajes', (req: Request, res: Response) => {
+    const cuerpo = req.body.cuerpo;
+    const de = req.body.de;
+
+    const payload = {
+        de,
+        cuerpo
+    }
+    //Conectamos al websocket
+    const server = Server.instance;
+    //Enviamos por broadcast
+    server.io.emit('mensaje-nuevo', payload);
+
     res.json({
         ok: true,
-        mensaje: 'Todo esta bien!!'
+        cuerpo,
+        de
     });
 
 });
@@ -18,6 +32,15 @@ router.post('/mensajes/:id', (req: Request, res: Response) => {
 
     //Lectura de la url
     const id = req.params.id;
+
+    const payload = {
+        de,
+        cuerpo
+    }
+    //Conectamos al websocket
+    const server = Server.instance;
+    // Enviamos un mensaje a esta id en particular (mensaje privado.)
+    server.io.in( id ).emit('mensaje-privado', payload); //sin in( id ) se enviaría a todos.
 
     res.json({
         ok: true,
